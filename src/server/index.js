@@ -1,3 +1,4 @@
+//A server app has been created for simulating oracle behavior. Server can be launched with “npm run server”
 
 import http from 'http'
 import app from './server'
