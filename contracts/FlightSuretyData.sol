@@ -81,23 +81,23 @@ contract FlightSuretyData {
     }
 
     modifier requireForNotRegisteredAirline(address airline) {
-        require(
-            !airlines[airline].isRegistered,
-            "This airline is not register yet"
-        );
+        require(!airlines[airline].isRegistered, "This airline is register");
         _;
     }
 
     modifier requireForAlreadyRegisteredAirline(address airline) {
         require(
             airlines[airline].isRegistered,
-            "This airline is already registered"
+            "This airline is not registered"
         );
         _;
     }
 
     modifier requireForFunding(address airline) {
-        require(airlines[airline].funds >= 10);
+        require(
+            airlines[airline].funds >= 10,
+            "Airline is not sufficiently contributed to the funds"
+        );
         _;
     }
 
@@ -188,12 +188,10 @@ contract FlightSuretyData {
         address airline,
         address passenger,
         uint256 amount
-    ) external payable requireIsOperational {
+    ) external requireIsOperational {
         //Airline can be registered, but does not participate in contract until it submits funding of 10 ether (make sure it is not 10 wei)
-        require(
-            airlines[airline].funds >= 10,
-            "This airline need to fund at least 10 ethers"
-        );
+        bool funded = airlines[airline].funds >= 10;
+        require(funded, "This airline need to fund at least 10 ethers");
         bytes32 insuranceKey = getInsuranceKey(passenger, flight);
         require(
             flightInsurances[insuranceKey].amount == 0,
@@ -214,6 +212,14 @@ contract FlightSuretyData {
             uint256 amount = flightInsurances[key].amount.mul(3).div(2);
             creditedClaims[key] = amount;
         }
+    }
+
+    function creditedAmount(address passenger, bytes32 flight)
+        public
+        view
+        returns (uint256)
+    {
+        return creditedClaims[getInsuranceKey(passenger, flight)];
     }
 
     /**
@@ -248,6 +254,11 @@ contract FlightSuretyData {
         return airlines[airline].funds;
     }
 
+    function isFunded(address airline) external view returns (bool) {
+        uint256 funds = airlines[airline].funds;
+        return funds >= 10;
+    }
+
     function getNumberOfRegisterAirlines() external view returns (uint256) {
         return registeredAirlinesCount;
     }
@@ -269,4 +280,8 @@ contract FlightSuretyData {
     }
 
     receive() external payable {}
+
+    function getContractBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
 }

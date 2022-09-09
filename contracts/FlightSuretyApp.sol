@@ -118,6 +118,10 @@ contract FlightSuretyApp {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    function isAirline(address airline) external view returns (bool) {
+        return flightSuretyData.isAirlineRegistered(airline);
+    }
+
     /**
      * @dev Add an airline to the registration queue
      *
@@ -137,7 +141,7 @@ contract FlightSuretyApp {
                     flightSuretyData.getNumberOfRegisterAirlines()
                 );
             }
-            return (true, 1);
+            return (true, 33);
         } else {
             bool isVoted = false;
             for (
@@ -172,16 +176,66 @@ contract FlightSuretyApp {
         }
     }
 
+    function fundAirline() public payable {
+        flightSuretyData.fund(msg.sender, msg.value);
+        if (flightSuretyData.isFunded(msg.sender)) {
+            emit AirlineFunded(
+                msg.sender,
+                flightSuretyData.getFunds(msg.sender)
+            );
+        }
+    }
+
+    function isFunded(address airline) external view returns (bool) {
+        return flightSuretyData.isFunded(airline);
+    }
+
+    function buyInsurance(string memory flight, address airline)
+        external
+        payable
+        requireIsOperational
+    {
+        require(
+            msg.value > 0 && msg.value <= 1,
+            "Insurance amount should be between 0 and 1 ether"
+        );
+        bytes32 flightKey = getFlightKey(flight, airline);
+        flightSuretyData.buy(flightKey, airline, msg.sender, msg.value);
+        emit InsurancePurchased(flight, airline, msg.sender, msg.value);
+    }
+
+    function creditPassenger(string memory flight, address airline)
+        external
+        payable
+        requireIsOperational
+    {
+        bytes32 flightKey = getFlightKey(flight, airline);
+        uint256 amount = flightSuretyData.creditedAmount(msg.sender, flightKey);
+        require(amount > 0, "No balance to withdraw");
+        uint256 credit = flightSuretyData.pay(msg.sender, flightKey);
+        payable(msg.sender).transfer(credit);
+        emit PassengerCredited(msg.sender, amount);
+    }
+
+    function creditedAmount(string memory flight, address airline)
+        external
+        view
+        returns (uint256)
+    {
+        bytes32 flightKey = getFlightKey(flight, airline);
+        return flightSuretyData.creditedAmount(msg.sender, flightKey);
+    }
+
+    function getContractBalance() external view returns (uint256, uint256) {
+        return (address(this).balance, flightSuretyData.getContractBalance());
+    }
+
     /**
      * @dev Register a future flight for insuring.
      *
      */
-    function registerFlight(
-        string memory flight,
-        address airline,
-        uint256 timestamp
-    ) external {
-        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+    function registerFlight(string memory flight, address airline) external {
+        bytes32 flightKey = getFlightKey(flight, airline);
         require(
             !flights[flightKey].isRegistered,
             "This flight is already registered"
@@ -201,9 +255,19 @@ contract FlightSuretyApp {
     function processFlightStatus(
         address airline,
         string memory flight,
-        uint256 timestamp,
+        // uint256 timestamp,
         uint8 statusCode
-    ) internal pure {}
+    ) public {
+        require(address(0) != airline, "Airline address must be valid");
+        if (
+            statusCode == STATUS_CODE_LATE_AIRLINE ||
+            statusCode == STATUS_CODE_LATE_TECHNICAL
+        ) {
+            bytes32 flightKey = getFlightKey(flight, airline);
+            flightSuretyData.creditInsurees(flightKey);
+            emit CreditInsurees(airline, flight);
+        }
+    }
 
     // Generate a request for oracles to fetch flight information
     function fetchFlightStatus(
@@ -336,16 +400,16 @@ contract FlightSuretyApp {
             emit FlightStatusInfo(airline, flight, timestamp, statusCode);
 
             // Handle flight status as appropriate
-            processFlightStatus(airline, flight, timestamp, statusCode);
+            processFlightStatus(airline, flight, statusCode);
         }
     }
 
-    function getFlightKey(
-        address airline,
-        string memory flight,
-        uint256 timestamp
-    ) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
+    function getFlightKey(string memory flight, address airline)
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encodePacked(flight, airline));
     }
 
     // Returns array of three non-duplicating integers from 0-9
