@@ -43,6 +43,8 @@ contract FlightSuretyData {
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
+    event AuthorizedContract(address authorizedContract);
+    event DeAuthorizedContract(address deAuthorizedContract);
 
     /**
      * @dev Constructor
@@ -50,7 +52,7 @@ contract FlightSuretyData {
      */
     constructor(address airlineAddress) {
         contractOwner = msg.sender;
-        airlines[airlineAddress] = Airline(true, 0); //First airline is registered when contract is deployed.
+        airlines[airlineAddress] = Airline(true, 0);
     }
 
     /********************************************************************************************/
@@ -129,6 +131,26 @@ contract FlightSuretyData {
         operational = mode;
     }
 
+    function isAirlineRegistered(address airline) external view returns (bool) {
+        return airlines[airline].isRegistered;
+    }
+
+    function authorizeCaller(address contractAddress)
+        external
+        requireContractOwner
+    {
+        authorizedCallers[contractAddress] == true;
+        emit AuthorizedContract(contractAddress);
+    }
+
+    function deauthorizeCaller(address contractAddress)
+        external
+        requireContractOwner
+    {
+        delete authorizedCallers[contractAddress];
+        emit DeAuthorizedContract(contractAddress);
+    }
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -166,7 +188,7 @@ contract FlightSuretyData {
         address airline,
         address passenger,
         uint256 amount
-    ) external requireIsOperational {
+    ) external payable requireIsOperational {
         //Airline can be registered, but does not participate in contract until it submits funding of 10 ether (make sure it is not 10 wei)
         require(
             airlines[airline].funds >= 10,
@@ -177,25 +199,58 @@ contract FlightSuretyData {
             flightInsurances[insuranceKey].amount == 0,
             "This passenger already got insurance key"
         );
+        flightInsurances[insuranceKey] = FligthInsurance(amount, false);
+        fund(airline, amount);
+        passengers[flight].push(passenger);
     }
 
     /**
      *  @dev Credits payouts to insurees
      */
-    function creditInsurees() external pure {}
+    function creditInsurees(bytes32 flight) external {
+        for (uint256 i = 0; i < passengers[flight].length; i++) {
+            address passenger = passengers[flight][i];
+            bytes32 key = getInsuranceKey(passenger, flight);
+            uint256 amount = flightInsurances[key].amount.mul(3).div(2);
+            creditedClaims[key] = amount;
+        }
+    }
 
     /**
      *  @dev Transfers eligible payout funds to insuree
      *
      */
-    function pay() external pure {}
+    function pay(address passenger, bytes32 flight) external returns (uint256) {
+        bytes32 key = getInsuranceKey(passenger, flight);
+        uint256 amount = creditedClaims[key];
+        require(amount > 0, "Credited amount should be greater than zero");
+
+        delete creditedClaims[key];
+
+        return amount;
+    }
 
     /**
      * @dev Initial funding for the insurance. Unless there are too many delayed flights
      *      resulting in insurance payouts, the contract should be self-sustaining
      *
      */
-    function fund() public payable {}
+    function fund(address airline, uint256 amount)
+        public
+        payable
+        requireIsOperational
+        requireForAlreadyRegisteredAirline(airline)
+    {
+        airlines[airline].funds += amount;
+    }
+
+    function getFunds(address airline) external view returns (uint256 amount) {
+        return airlines[airline].funds;
+    }
+
+    function getNumberOfRegisterAirlines() external view returns (uint256) {
+        return registeredAirlinesCount;
+    }
 
     function getFlightKey(
         address airline,
@@ -212,4 +267,6 @@ contract FlightSuretyData {
     fallback() external payable {
         fund(msg.sender, msg.value);
     }
+
+    receive() external payable {}
 }

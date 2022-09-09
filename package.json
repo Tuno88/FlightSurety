@@ -42,5 +42,8 @@
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^4.11.0",
     "webpack-node-externals": "1.7.2"
+  },
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.0.14"
   }
 }

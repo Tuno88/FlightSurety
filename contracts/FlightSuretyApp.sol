@@ -6,6 +6,7 @@ pragma solidity ^0.8.3;
 // More info: https://www.nccgroup.trust/us/about-us/newsroom-and-events/blog/2018/november/smart-contract-insecurity-bad-arithmetic/
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./FlightSuretyData.sol";
 
 /************************************************** */
 /* FlightSurety Smart Contract                      */
@@ -28,6 +29,19 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
     address private contractOwner; // Account used to deploy contract
+    mapping(address => address[]) public airlinesVoteFOrRegistration;
+    FlightSuretyData flightSuretyData;
+    event AirlineRegistered(address airline, uint256 count);
+    event AirlineRegistrationConsensus(address airline, uint256 consensus);
+    event AirlineFunded(address airline, uint256 funds);
+    event InsurancePurchased(
+        string flight,
+        address airline,
+        address passenger,
+        uint256 amount
+    );
+    event PassengerCredited(address passenger, uint256 amount);
+    event CreditInsurees(address airline, string flight);
 
     struct Flight {
         bool isRegistered;
@@ -63,6 +77,22 @@ contract FlightSuretyApp {
         _;
     }
 
+    modifier requireForNotRegisteredAirline(address airline) {
+        require(
+            !flightSuretyData.isAirlineRegistered(airline),
+            "This airline is already registered"
+        );
+        _;
+    }
+
+    modifier requireForRegisteredAirline(address airline) {
+        require(
+            flightSuretyData.isAirlineRegistered(airline),
+            "This airline is not yet registered"
+        );
+        _;
+    }
+
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
     /********************************************************************************************/
@@ -80,8 +110,8 @@ contract FlightSuretyApp {
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
 
-    function isOperational() public pure returns (bool) {
-        return true; // Modify to call data contract's status
+    function isOperational() public view returns (bool) {
+        return flightSuretyData.isOperational(); // Modify to call data contract's status
     }
 
     /********************************************************************************************/
@@ -92,19 +122,77 @@ contract FlightSuretyApp {
      * @dev Add an airline to the registration queue
      *
      */
-    function registerAirline()
-        external
-        pure
+    function registerAirline(address airline)
+        public
+        payable
+        requireIsOperational
+        requireForNotRegisteredAirline(airline)
         returns (bool success, uint256 votes)
     {
-        return (success, 0);
+        if (flightSuretyData.getNumberOfRegisterAirlines() < 4) {
+            flightSuretyData.registerAirline(airline);
+            if (flightSuretyData.isAirlineRegistered(airline)) {
+                emit AirlineRegistered(
+                    airline,
+                    flightSuretyData.getNumberOfRegisterAirlines()
+                );
+            }
+            return (true, 1);
+        } else {
+            bool isVoted = false;
+            for (
+                uint256 i = 0;
+                i < airlinesVoteFOrRegistration[airline].length;
+                i++
+            ) {
+                if (airlinesVoteFOrRegistration[airline][i] == msg.sender) {
+                    isVoted = true;
+                    break;
+                }
+            }
+            require(!isVoted, "This airline already voted");
+            airlinesVoteFOrRegistration[airline].push(msg.sender);
+            uint256 consensus = (airlinesVoteFOrRegistration[airline].length *
+                100).div(flightSuretyData.getNumberOfRegisterAirlines());
+            emit AirlineRegistrationConsensus(airline, consensus);
+
+            if (consensus >= 50) {
+                flightSuretyData.registerAirline(airline);
+
+                if (flightSuretyData.isAirlineRegistered(airline)) {
+                    emit AirlineRegistered(
+                        airline,
+                        flightSuretyData.getNumberOfRegisterAirlines()
+                    );
+                }
+
+                return (true, airlinesVoteFOrRegistration[airline].length);
+            }
+            return (false, airlinesVoteFOrRegistration[airline].length);
+        }
     }
 
     /**
      * @dev Register a future flight for insuring.
      *
      */
-    function registerFlight() external pure {}
+    function registerFlight(
+        string memory flight,
+        address airline,
+        uint256 timestamp
+    ) external {
+        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+        require(
+            !flights[flightKey].isRegistered,
+            "This flight is already registered"
+        );
+        flights[flightKey] = Flight(
+            true,
+            STATUS_CODE_UNKNOWN,
+            block.timestamp,
+            airline
+        );
+    }
 
     /**
      * @dev Called after oracle has updated flight status
@@ -129,10 +217,8 @@ contract FlightSuretyApp {
         bytes32 key = keccak256(
             abi.encodePacked(index, airline, flight, timestamp)
         );
-        oracleResponses[key] = ResponseInfo({
-            requester: msg.sender,
-            isOpen: true
-        });
+        oracleResponses[key].requester = msg.sender;
+        oracleResponses[key].isOpen = true;
 
         emit OracleRequest(index, airline, flight, timestamp);
     }

@@ -6,7 +6,8 @@ contract("Flight Surety Tests", async (accounts) => {
   before("setup contract", async () => {
     config = await Test.Config(accounts);
     await config.flightSuretyData.authorizeCaller(
-      config.flightSuretyApp.address
+      config.flightSuretyApp.address,
+      { from: accounts[0] }
     );
   });
 
@@ -72,7 +73,9 @@ contract("Flight Surety Tests", async (accounts) => {
         from: config.firstAirline,
       });
     } catch (e) {}
-    let result = await config.flightSuretyData.isAirline.call(newAirline);
+    let result = await config.flightSuretyData.isAirlineRegistered.call(
+      newAirline
+    );
 
     // ASSERT
     assert.equal(
