@@ -141,7 +141,7 @@ contract FlightSuretyApp {
                     flightSuretyData.getNumberOfRegisterAirlines()
                 );
             }
-            return (true, 33);
+            return (true, 1);
         } else {
             bool isVoted = false;
             for (
