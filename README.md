@@ -1,53 +1,10 @@
-# FlightSurety
-abc
-FlightSurety is a sample application project for Udacity's Blockchain course.
-
-## Install
-
-This repository contains Smart Contract code in Solidity (using Truffle), tests (also using Truffle), dApp scaffolding (using HTML, CSS and JS) and server app scaffolding.
-
-To install, download or clone the repo, then:
-
-`npm install`
-`truffle compile`
-
-## Develop Client
-
-To run truffle tests:
-
-`truffle test ./test/flightSurety.js`
-`truffle test ./test/oracles.js`
-
-To use the dapp:
-
-`truffle migrate`
-`npm run dapp`
-
-To view dapp:
-
-`http://localhost:8000`
-
-## Develop Server
-
-`npm run server`
-`truffle test ./test/oracles.js`
-
-## Deploy
-
-To build dapp for prod:
-`npm run dapp:prod`
-
-Deploy the contents of the ./dapp folder
-
-
-## Resources
-
-* [How does Ethereum work anyway?](https://medium.com/@preethikasireddy/how-does-ethereum-work-anyway-22d1df506369)
-* [BIP39 Mnemonic Generator](https://iancoleman.io/bip39/)
-* [Truffle Framework](http://truffleframework.com/)
-* [Ganache Local Blockchain](http://truffleframework.com/ganache/)
-* [Remix Solidity IDE](https://remix.ethereum.org/)
-* [Solidity Language Reference](http://solidity.readthedocs.io/en/v0.4.24/)
-* [Ethereum Blockchain Explorer](https://etherscan.io/)
-* [Web3Js Reference](https://github.com/ethereum/wiki/wiki/JavaScript-API)
+### FlightSurety
+# truffle develop
+![Screenshot (600)](https://user-images.githubusercontent.com/92582391/189476954-0fa41e15-399a-40a9-a152-9043ee35e746.png)
+# compile
+![Screenshot (601)](https://user-images.githubusercontent.com/92582391/189476955-7d24f29e-b249-45c1-9c7f-f9377ddd74ae.png)
+# migrate
+![Screenshot (602)](https://user-images.githubusercontent.com/92582391/189476959-3be7f04e-9f2b-4bc9-a6ec-b5128338462e.png)
+# test
+![Screenshot (606)](https://user-images.githubusercontent.com/92582391/189476967-3003218f-cb6d-4d47-b060-3aa1733285ff.png)
 
