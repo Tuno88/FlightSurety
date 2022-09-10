@@ -156,8 +156,8 @@ contract FlightSuretyApp {
             }
             require(!isVoted, "This airline already voted");
             airlinesVoteFOrRegistration[airline].push(msg.sender);
-            uint256 consensus = (airlinesVoteFOrRegistration[airline].length *
-                100).div(flightSuretyData.getNumberOfRegisterAirlines());
+            uint256 consensus = (airlinesVoteFOrRegistration[airline].length /
+                (flightSuretyData.getNumberOfRegisterAirlines())) * 100;
             emit AirlineRegistrationConsensus(airline, consensus);
 
             if (consensus >= 50) {
