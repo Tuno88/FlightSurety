@@ -197,45 +197,45 @@ contract FlightSuretyApp {
         return flightSuretyData.isFunded(airline);
     }
 
-    // function buyInsurance(
-    //     string memory flight,
-    //     address airline,
-    //     uint256 timestamp
-    // ) external payable requireIsOperational {
-    //     require(
-    //         msg.value > 0 && msg.value <= 1,
-    //         "Insurance amount should be between 0 and 1 ether"
-    //     );
-    //     bytes32 flightKey = getFlightKey(flight, airline, timestamp);
-    //     flightSuretyData.buy(flightKey, airline, msg.sender, msg.value);
-    //     emit InsurancePurchased(flight, airline, msg.sender, msg.value);
-    // }
+    function buyInsurance(
+        string memory flight,
+        address airline,
+        uint256 timestamp
+    ) external payable requireIsOperational {
+        require(
+            msg.value > 0 && msg.value <= 1,
+            "Insurance amount should be between 0 and 1 ether"
+        );
+        bytes32 flightKey = getFlightKey(flight, airline, timestamp);
+        flightSuretyData.buy(flightKey, airline, msg.sender, msg.value);
+        emit InsurancePurchased(flight, airline, msg.sender, msg.value);
+    }
 
-    // function creditPassenger(
-    //     string memory flight,
-    //     address airline,
-    //     uint256 timestamp
-    // ) external payable requireIsOperational {
-    //     bytes32 flightKey = getFlightKey(flight, airline, timestamp);
-    //     uint256 amount = flightSuretyData.creditedAmount(msg.sender, flightKey);
-    //     require(amount > 0, "No balance to withdraw");
-    //     uint256 credit = flightSuretyData.pay(msg.sender, flightKey);
-    //     payable(msg.sender).transfer(credit);
-    //     emit PassengerCredited(msg.sender, amount);
-    // }
+    function creditPassenger(
+        string memory flight,
+        address airline,
+        uint256 timestamp
+    ) external payable requireIsOperational {
+        bytes32 flightKey = getFlightKey(flight, airline, timestamp);
+        uint256 amount = flightSuretyData.creditedAmount(msg.sender, flightKey);
+        require(amount > 0, "No balance to withdraw");
+        uint256 credit = flightSuretyData.pay(msg.sender, flightKey);
+        payable(msg.sender).transfer(credit);
+        emit PassengerCredited(msg.sender, amount);
+    }
 
-    // function creditedAmount(
-    //     string memory flight,
-    //     address airline,
-    //     uint256 timestamp
-    // ) external view returns (uint256) {
-    //     bytes32 flightKey = getFlightKey(flight, airline, timestamp);
-    //     return flightSuretyData.creditedAmount(msg.sender, flightKey);
-    // }
+    function creditedAmount(
+        string memory flight,
+        address airline,
+        uint256 timestamp
+    ) external view returns (uint256) {
+        bytes32 flightKey = getFlightKey(flight, airline, timestamp);
+        return flightSuretyData.creditedAmount(msg.sender, flightKey);
+    }
 
-    // function getContractBalance() external view returns (uint256, uint256) {
-    //     return (address(this).balance, flightSuretyData.getContractBalance());
-    // }
+    function getContractBalance() external view returns (uint256, uint256) {
+        return (address(this).balance, flightSuretyData.getContractBalance());
+    }
 
     /**
      * @dev Register a future flight for insuring.

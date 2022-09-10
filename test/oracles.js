@@ -109,5 +109,5 @@ contract("Oracles", async (accounts) => {
     console.log(
       "---end-------can request flight status--------------------------------------------"
     );
-  }).timeout(2000000);
+  }).timeout(3000000);
 });
