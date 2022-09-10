@@ -1,17 +1,36 @@
+*{
+    box-sizing: border-box;
+}
 body {
-    background-image: url('flight.jpg'); /* Source: iStockPhoto */
+    background-image: url('flight.jpg'); 
     background-repeat: no-repeat;
     background-size: cover;
 }
 
 .container {
-    margin-top: 400px;
+    margin-top: 80px;
     background-color: #000;
     opacity: 0.9;
     color: #fff;
     padding: 40px;
 }
-
+.container2 {
+    margin-top: 10px;
+    background-color: #000;
+    opacity: 0.9;
+    color: #fff;
+    padding: 40px;
+    height: 400px;
+    overflow: scroll;
+}
+.container3 {
+    margin-top: 10px;
+    background-color: #000;
+    opacity: 0.9;
+    color: #fff;
+    padding: 40px;
+    min-height: 600px;
+}
 .top-20 {
     margin-top: 20px;
 }
@@ -39,4 +58,8 @@ label.form {
 }
 input {
     margin-right: 30px;
+}
+
+table td,th{
+    border: 1px solid white;
 }

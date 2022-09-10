@@ -21,14 +21,90 @@
 
     <main class="container">
 
-        <div id="display-wrapper" class="top-20">
+        <div id="display-wrapper" class="top-20"><h1>Register Flight</h1>
+        </div>
+        <br><br>
+        <div class="row top-20">
+            <label class="form">Flight</label> 
+            <input type="text" id="register_flight_number"> <btn class="btn btn-primary" id="register_button">Register</btn>
+            <p id="register_error">Result: </p>
         </div>
         <div class="row top-20">
-            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            <label class="form">Flight</label> 
+            <input type="text" id="fund_flight_number"> 
+            <label class="form">Amount</label> 
+            <input type="text" id="fund_amount">
+            <btn class="btn btn-primary" id="fund_button">Fund</btn>
+            <p id="fund_error">Result: </p>
         </div>
-        <div>Passenger</div>
     </main>
-
+    <section  class="container2">
+        <h1>Available Flight</h1>
+        <table width="100%">
+            <tr>
+                <th width="20%">Flight No</th>
+                <th width="30%">Airline</th>
+                <th width="30%">Departure Time</th>
+                <th width="20%">Status</th>
+            </tr>
+        </table>
+    </section>
+    <section  class="container3">
+        <div id="display-wrapper">
+            <h1>Passenger</h1>
+            <p>Your address: <span id="passengerAddress"></span></p>
+            <p>Available Credit For Withdrawal: <span id="availableWithdraw"></span></p>
+            <table>
+                <tr>
+                    <td>Widthrawal Amount(Eth)</td>
+                    <td><input type="text"/></td>
+                    <td>
+                        <button>Make Withdrawal</button>
+                    </td>
+                </tr>
+            </table>
+            <h2>Purchase Insurance</h2>
+            <table width="100%">
+                <tr>
+                    <td>Flight</td>
+                    <td>
+                        <select id="flight">
+                        </select>
+                    </td>
+                    <td>Depature Time</td>
+                    <td>
+                        <select id="departure_time">
+                        </select>
+                    </td>
+                    <td>Insurance Amount(ETH)</td>
+                    <td>
+                        <select id="amount">
+                    </select>
+                    </td>
+                    <td>
+                        <button>Purchase Insurance</button>
+                    </td>
+                </tr>
+            </table>
+            <br><br>
+            <h2>Purchase History</h2>
+            <table width="100%">
+                <tr>
+                    <th>Flight No</th>
+                    <th>
+                        Airline
+                    </th>
+                    <th>Depature Time</th>
+                    <th>Insurance Amount(ETH)</th>
+                    <th>
+                        Status
+                    </th>
+                    <th></th>
+                </tr>
+            </table>
+        </div>
+    </section>
+    <!-- <script src="index.js"></script> -->
 </body>
 
 </html>
