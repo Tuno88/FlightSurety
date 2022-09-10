@@ -36,22 +36,20 @@ export default class Contract {
   }
 
   isOperational(callback) {
-    let self = this;
-    self.flightSuretyApp.methods
+    this.flightSuretyApp.methods
       .isOperational()
-      .call({ from: self.owner }, callback);
+      .call({ from: this.owner }, callback);
   }
 
   fetchFlightStatus(flight, callback) {
-    let self = this;
     let payload = {
-      airline: self.airlines[0],
+      airline: this.airlines[0],
       flight: flight,
       timestamp: Math.floor(Date.now() / 1000),
     };
-    self.flightSuretyApp.methods
+    this.flightSuretyApp.methods
       .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
-      .send({ from: self.owner }, (error, result) => {
+      .send({ from: this.owner }, (error, result) => {
         callback(error, payload);
       });
   }
@@ -71,14 +69,13 @@ export default class Contract {
   }
 
   async fundAirline(callback) {
-    let self = this;
     let fee = this.web3.utils.toWei("10", "Ethers");
     let user = await window.ethereum.request({ method: "eth_requestAccounts" });
     let payload = {
       airline: user[0],
       timestamp: parseInt(Date.now),
     };
-    self.flightSuretyApp.methods
+    this.flightSuretyApp.methods
       .fundAirline()
       .send({ from: user[0], value: fee }, (error, result) => {
         callback(error, payload);

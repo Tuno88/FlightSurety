@@ -229,7 +229,7 @@ contract FlightSuretyData {
     function pay(address passenger, bytes32 flight) external returns (uint256) {
         bytes32 key = getInsuranceKey(passenger, flight);
         uint256 amount = creditedClaims[key];
-        require(amount > 0, "Credited amount should be greater than zero");
+        require(amount > 0, "need to be greater than 0");
 
         delete creditedClaims[key];
 
